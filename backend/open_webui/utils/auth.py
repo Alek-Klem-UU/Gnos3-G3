@@ -521,6 +521,7 @@ def create_k4mi_exchange_token(
     user,
     groups: Optional[List[str]] = None,
     mfa_verified: bool = False,
+    audience: Optional[str] = None,
 ) -> tuple[str, int]:
     """Mint a 5-minute Gnos3-issued JWT for the K4mi SSO bridge.
 
@@ -539,6 +540,8 @@ def create_k4mi_exchange_token(
         'iat': now,
         'exp': expires_at_dt,
     }
+    if audience:
+        payload['aud'] = audience
     token = jwt.encode(payload, SESSION_SECRET, algorithm=ALGORITHM)
     return token, int(expires_at_dt.timestamp())
 

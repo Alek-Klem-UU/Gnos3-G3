@@ -60,8 +60,11 @@
 			name = group.name;
 			description = group.description;
 			const loadedPermissions = group?.permissions ?? {};
-			// Create fresh object from defaults, then overlay loaded values
+			// Create fresh object from defaults, then overlay loaded values.
+			// Sections this modal has no defaults for (modules, companies, k4mi)
+			// are kept as loaded: saving a group must never drop them.
 			permissions = {
+				...loadedPermissions,
 				workspace: { ...DEFAULT_PERMISSIONS.workspace, ...loadedPermissions.workspace },
 				sharing: { ...DEFAULT_PERMISSIONS.sharing, ...loadedPermissions.sharing },
 				access_grants: { ...DEFAULT_PERMISSIONS.access_grants, ...loadedPermissions.access_grants },
@@ -210,7 +213,7 @@
 										}}
 									/>
 								{:else if selectedTab == 'permissions'}
-									<Permissions bind:permissions {defaultPermissions} />
+									<Permissions bind:permissions {defaultPermissions} showModules={custom} />
 								{:else if selectedTab == 'users'}
 									<Users bind:userCount groupId={group?.id} />
 								{/if}

@@ -16,6 +16,11 @@
 	export let allowSameOrigin = false; // set to true only when you trust the content
 	export let allowPopups = false;
 	export let allowDownloads = true;
+	// For trusted embedded apps only (e.g. Office): print()/confirm(), links
+	// opened in normal tabs, and Permissions Policy grants such as the clipboard.
+	export let allowModals = false;
+	export let allowPopupsToEscapeSandbox = false;
+	export let allow: string | undefined = undefined;
 
 	export let referrerPolicy: HTMLIFrameElement['referrerPolicy'] =
 		'strict-origin-when-cross-origin';
@@ -34,6 +39,8 @@
 			allowForms && 'allow-forms',
 			allowSameOrigin && 'allow-same-origin',
 			allowPopups && 'allow-popups',
+			allowPopupsToEscapeSandbox && 'allow-popups-to-escape-sandbox',
+			allowModals && 'allow-modals',
 			allowDownloads && 'allow-downloads'
 		]
 			.filter(Boolean)
@@ -212,6 +219,7 @@ window.Chart = parent.Chart; // Chart previously assigned on parent
 		width="100%"
 		frameborder="0"
 		{sandbox}
+		{allow}
 		referrerpolicy={referrerPolicy}
 		{allowFullscreen}
 		on:load={onLoad}

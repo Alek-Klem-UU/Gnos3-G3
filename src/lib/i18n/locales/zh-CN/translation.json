@@ -35,6 +35,7 @@
 	"Generate year-end closing entry to zero all revenue/expense accounts into retained earnings.": "生成年末结账凭证，将所有损益类账户结转至未分配利润。",
 	"No accounting periods defined": "未定义会计期间",
 	"No bank account configured": "未配置银行账户",
+	"not posted": "张未过账",
 	"Nothing to carry forward": "没有需要结转的内容",
 	"Period": "期间",
 	"Period closed": "期间已结账",
@@ -2334,5 +2335,15 @@
 	"Your usage stats have been successfully synced.": "已成功同步您的使用统计数据。",
 	"YouTube": "YouTube",
 	"Youtube Language": "Youtube 语言",
-	"Youtube Proxy URL": "Youtube 代理地址"
+	"Youtube Proxy URL": "Youtube 代理地址",
+	"This closes the whole period {{name}}, **from {{start}} to {{end}}** — not only the month you checked ({{from}} to {{to}}). No entry dated in that range can be added, changed or voided afterwards. To close one month at a time, set up monthly periods under Settings → Accounting Periods.": "这将结账整个期间 {{name}}，**从 {{start}} 至 {{end}}**，而不只是您检查的月份（{{from}} 至 {{to}}）。结账后，该日期范围内的凭证将无法新增、修改或作废。如需按月结账，请在 设置 → 会计期间 中设置按月的会计期间。",
+	"Close {{name}} (**{{start}} to {{end}}**)? No entry dated in this period can be added, changed or voided afterwards.": "确认结账 {{name}}（**{{start}} 至 {{end}}**）？结账后，该期间内的凭证将无法新增、修改或作废。",
+	"Accounting Periods": "会计期间",
+	"Office": "Office",
+	"Loading Office…": "正在加载 Office…",
+	"Could not load Office.": "无法加载 Office。",
+	"Module Permissions": "模块权限",
+	"Reprocess": "重新处理",
+	"Post entries": "过账凭证",
+	"Administer": "管理"
 }

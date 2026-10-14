@@ -35,6 +35,7 @@
 	"Generate year-end closing entry to zero all revenue/expense accounts into retained earnings.": "Générer l'écriture de clôture d'exercice qui solde les comptes de charges et de produits vers le résultat.",
 	"No accounting periods defined": "Aucune période comptable définie",
 	"No bank account configured": "Aucun compte bancaire configuré",
+	"not posted": "non validées",
 	"Nothing to carry forward": "Rien à reporter",
 	"Period": "Période",
 	"Period closed": "Période clôturée",
@@ -2344,5 +2345,15 @@
 	"Your usage stats have been successfully synced.": "Vos statistiques d'utilisation ont été synchronisées avec succès.",
 	"YouTube": "YouTube",
 	"Youtube Language": "Langue de Youtube",
-	"Youtube Proxy URL": "URL du proxy YouTube"
+	"Youtube Proxy URL": "URL du proxy YouTube",
+	"This closes the whole period {{name}}, **from {{start}} to {{end}}** — not only the month you checked ({{from}} to {{to}}). No entry dated in that range can be added, changed or voided afterwards. To close one month at a time, set up monthly periods under Settings → Accounting Periods.": "Cela clôture toute la période {{name}}, **du {{start}} au {{end}}**, et pas seulement le mois vérifié (du {{from}} au {{to}}). Aucune écriture datée dans cet intervalle ne pourra plus être ajoutée, modifiée ou annulée. Pour clôturer mois par mois, créez des périodes mensuelles dans Réglages → Périodes comptables.",
+	"Close {{name}} (**{{start}} to {{end}}**)? No entry dated in this period can be added, changed or voided afterwards.": "Clôturer {{name}} (**du {{start}} au {{end}}**) ? Aucune écriture datée dans cette période ne pourra plus être ajoutée, modifiée ou annulée.",
+	"Accounting Periods": "Périodes comptables",
+	"Office": "Office",
+	"Loading Office…": "Chargement d'Office…",
+	"Could not load Office.": "Impossible de charger Office.",
+	"Module Permissions": "Autorisations des modules",
+	"Reprocess": "Retraiter",
+	"Post entries": "Valider les écritures",
+	"Administer": "Administrer"
 }

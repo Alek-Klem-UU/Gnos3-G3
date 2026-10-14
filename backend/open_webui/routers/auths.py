@@ -1663,3 +1663,32 @@ async def finances_exchange_token(
         mfa_verified=False,
     )
     return {'token': token, 'expires_at': expires_at}
+
+
+@router.post('/office/exchange-token', response_model=K4miExchangeTokenResponse)
+async def office_exchange_token(
+    request: Request,
+    user=Depends(get_verified_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    """Mint a five-minute Office token after the existing Gnos3 RBAC check.
+
+    The browser carries it to Office /sso on port 8004. Office verifies the
+    gnos3-module:office audience and starts its own owner-scoped session.
+    """
+    if user.role not in ('admin', 'superadmin') and not await has_permission(
+        user.id, 'modules.office.read', request.app.state.config.USER_PERMISSIONS
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='Office module access denied',
+        )
+    user_groups = await Groups.get_groups_by_member_id(user.id, db=db)
+    group_names = [g.name for g in user_groups if g.name]
+    token, expires_at = create_k4mi_exchange_token(
+        user,
+        groups=group_names,
+        mfa_verified=False,
+        audience="gnos3-module:office",
+    )
+    return {'token': token, 'expires_at': expires_at}

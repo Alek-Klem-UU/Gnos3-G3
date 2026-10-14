@@ -96,6 +96,7 @@ from open_webui.routers import (
     memories,
     models,
     knowledge,
+    office_knowledge,
     prompts,
     evaluations,
     skills,
@@ -1442,6 +1443,7 @@ app.include_router(notes.router, prefix='/api/v1/notes', tags=['notes'])
 
 app.include_router(models.router, prefix='/api/v1/models', tags=['models'])
 app.include_router(knowledge.router, prefix='/api/v1/knowledge', tags=['knowledge'])
+app.include_router(office_knowledge.router, prefix='/api/v1/office-knowledge', tags=['office'])
 app.include_router(data_connectors.router, prefix='/api/v1/data-connectors', tags=['data-connectors'])
 app.include_router(prompts.router, prefix='/api/v1/prompts', tags=['prompts'])
 app.include_router(tools.router, prefix='/api/v1/tools', tags=['tools'])

@@ -1629,6 +1629,7 @@ DEFAULT_USER_PERMISSIONS = {
             'read': False,
             'write': False,   # reserved; the module manages its own data via SSO
         },
+        'office': {'read': False},
     },
     'k4mi': {
         'documents': {

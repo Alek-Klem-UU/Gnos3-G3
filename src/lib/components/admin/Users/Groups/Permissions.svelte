@@ -6,19 +6,84 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 
 	import { DEFAULT_PERMISSIONS } from '$lib/constants/permissions';
+	import { enabledModules, ensureModulesLoaded } from '$lib/stores/modules';
 
 	export let permissions = {};
 	export let defaultPermissions = {};
+	// Module rights are granted per group only, never as a default for everyone.
+	export let showModules = false;
+
+	// Keys and flags match DEFAULT_USER_PERMISSIONS['modules'] in the backend
+	// config; each module enforces them itself. `read` is access to the module.
+	const MODULE_PERMISSIONS = [
+		{
+			key: 'invoices',
+			label: 'Invoices',
+			flags: [
+				['write', 'Edit'],
+				['reprocess', 'Reprocess'],
+				['delete', 'Delete']
+			]
+		},
+		{
+			key: 'business_cards',
+			label: 'Business cards',
+			flags: [
+				['write', 'Edit'],
+				['reprocess', 'Reprocess'],
+				['delete', 'Delete']
+			]
+		},
+		{
+			key: 'accounting',
+			label: 'Accounting',
+			// Served by the invoices module.
+			module: 'invoices',
+			flags: [
+				['write', 'Edit'],
+				['post', 'Post entries'],
+				['admin', 'Administer']
+			]
+		},
+		{ key: 'finances', label: 'Finances', flags: [] },
+		{ key: 'office', label: 'Office', flags: [] }
+	];
+
+	// Only modules installed on this server; all of them if the dispatcher
+	// cannot be reached, so rights can still be managed.
+	$: installed = new Set($enabledModules.map((m) => m.name));
+	$: visibleModules = MODULE_PERMISSIONS.filter(
+		(m) => installed.size === 0 || installed.has(m.module ?? m.key)
+	);
 
 	// Reactive statement to ensure all fields are present in `permissions`
 	$: {
 		permissions = fillMissingProperties(permissions, DEFAULT_PERMISSIONS);
 	}
 
+	function fillModules(modules: any = {}) {
+		const filled = { ...modules };
+		for (const m of MODULE_PERMISSIONS) {
+			const blank = Object.fromEntries(['read', ...m.flags.map(([f]) => f)].map((f) => [f, false]));
+			filled[m.key] = { ...blank, ...modules[m.key] };
+		}
+		return filled;
+	}
+
+	// Turning access off also clears the module's other rights, so none stays
+	// granted out of sight.
+	function moduleAccessChanged(key: string, read: boolean) {
+		if (read) return;
+		for (const flag of Object.keys(permissions.modules[key])) {
+			permissions.modules[key][flag] = false;
+		}
+	}
+
 	function fillMissingProperties(obj: any, defaults: any) {
 		return {
 			...defaults,
 			...obj,
+			...(showModules ? { modules: fillModules(obj.modules) } : {}),
 			workspace: { ...defaults.workspace, ...obj.workspace },
 			sharing: { ...defaults.sharing, ...obj.sharing },
 			access_grants: { ...defaults.access_grants, ...obj.access_grants },
@@ -30,10 +95,49 @@
 
 	onMount(() => {
 		permissions = fillMissingProperties(permissions, DEFAULT_PERMISSIONS);
+		if (showModules) ensureModulesLoaded();
 	});
 </script>
 
 <div class="space-y-2">
+	{#if showModules}
+		<!-- {$i18n.t('Invoices')} {$i18n.t('Business cards')} {$i18n.t('Accounting')}
+		{$i18n.t('Finances')} {$i18n.t('Office')} {$i18n.t('Edit')} {$i18n.t('Reprocess')}
+		{$i18n.t('Delete')} {$i18n.t('Post entries')} {$i18n.t('Administer')} -->
+		<div>
+			<div class=" mb-2 text-sm font-medium">{$i18n.t('Module Permissions')}</div>
+
+			{#each visibleModules as m (m.key)}
+				<div class="flex flex-col w-full">
+					<div class="flex w-full justify-between my-1">
+						<div class=" self-center text-xs font-medium">
+							{$i18n.t(m.label)}
+						</div>
+						<Switch
+							bind:state={permissions.modules[m.key].read}
+							on:change={(e) => moduleAccessChanged(m.key, e.detail)}
+						/>
+					</div>
+
+					{#if permissions.modules[m.key].read && m.flags.length}
+						<div class="ml-2 flex flex-col gap-2 pt-0.5 pb-1">
+							{#each m.flags as [flag, label] (flag)}
+								<div class="flex w-full justify-between">
+									<div class="self-center text-xs">
+										{$i18n.t(label)}
+									</div>
+									<Switch bind:state={permissions.modules[m.key][flag]} />
+								</div>
+							{/each}
+						</div>
+					{/if}
+				</div>
+			{/each}
+		</div>
+
+		<hr class=" border-gray-100/30 dark:border-gray-850/30" />
+	{/if}
+
 	<!-- {$i18n.t('Default Model')}
 	{$i18n.t('Model Filtering')}
 	{$i18n.t('Model Permissions')}

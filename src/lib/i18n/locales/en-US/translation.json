@@ -2339,5 +2339,12 @@
 	"Your usage stats have been successfully synced.": "",
 	"YouTube": "",
 	"Youtube Language": "",
-	"Youtube Proxy URL": ""
+	"Youtube Proxy URL": "",
+	"Office": "",
+	"Loading Office…": "",
+	"Could not load Office.": "",
+	"Module Permissions": "",
+	"Reprocess": "",
+	"Post entries": "",
+	"Administer": ""
 }
