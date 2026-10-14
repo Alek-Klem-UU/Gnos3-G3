@@ -343,8 +343,17 @@ export const deleteTransaction = async (id: number) =>
 export const postTransaction = async (id: number) =>
 	apiPost(`/transactions/${id}/post`);
 
-export const bulkPostTransactions = async (params: { company_id: number; period_start?: string; period_end?: string }) =>
-	apiPost('/transactions/bulk-post', undefined, params as any);
+// Posts the given drafts, or — without transaction_ids — every draft of the company (within the dates).
+export const bulkPostTransactions = async (params: {
+	company_id: number;
+	period_start?: string;
+	period_end?: string;
+	transaction_ids?: number[];
+}) =>
+	apiPost('/transactions/bulk-post', undefined, {
+		...params,
+		transaction_ids: params.transaction_ids?.join(',')
+	} as any);
 
 export const voidTransaction = async (id: number) =>
 	apiPost(`/transactions/${id}/void`);

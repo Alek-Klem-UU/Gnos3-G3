@@ -119,6 +119,10 @@
 		return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 	};
 	const pct = (r: any) => (r === null || r === undefined ? '—' : `${(Number(r) * 100).toFixed(2).replace(/\.?0+$/, '')}%`);
+	// A slice with a ceiling means the tax went through the jurisdiction's tiers: show them,
+	// even when the profit only reached the first one (Hong Kong: 8.25% up to HK$2M).
+	const tiered = (tiers: any[] | null | undefined) =>
+		(tiers ?? []).some((t) => t.up_to !== null && t.up_to !== undefined);
 
 	// ── Bank accounts for the provisional-tax payment ──────────────────
 	let accounts: any[] = [];
@@ -182,7 +186,18 @@
 		}
 		return out;
 	})();
-	$: if (provDate && !provYears.some((y) => y.end === provPeriodEnd)) provPeriodEnd = fiscalYearEnd(provDate, fyStartMonth);
+	// Follow the payment date: every time it changes, pre-select the year it falls in —
+	// unless the accountant picked a year themselves (the second instalment is paid after
+	// the year-end and belongs to the year before). The date starts as today, so a check
+	// that only fired when the year left the list never moved it for a date typed in.
+	let provYearPicked = false;
+	let provYearFrom = '';
+	$: if (provDate && `${provDate}|${fyStartMonth}` !== provYearFrom) {
+		provYearFrom = `${provDate}|${fyStartMonth}`;
+		if (!provYearPicked || !provYears.some((y) => y.end === provPeriodEnd)) {
+			provPeriodEnd = fiscalYearEnd(provDate, fyStartMonth);
+		}
+	}
 
 	onMount(async () => {
 		try {
@@ -355,6 +370,7 @@
 			provRef = '';
 			provFcAmount = '';
 			provRate = '';
+			provYearPicked = false;
 			showProvisional = false;
 			if (result) await calc();
 		} catch (err: any) {
@@ -518,7 +534,7 @@
 				</div>
 				<div>
 					<label class={lblCls} for="prov-fy">{$i18n.t('Provisional tax for')}</label>
-					<select id="prov-fy" bind:value={provPeriodEnd} class={inputCls}>
+					<select id="prov-fy" bind:value={provPeriodEnd} on:change={() => (provYearPicked = true)} class={inputCls}>
 						{#each provYears as y}<option value={y.end}>{$i18n.t('FY')} {y.label} ({$i18n.t('ends')} {y.end})</option>{/each}
 					</select>
 				</div>
@@ -591,7 +607,7 @@
 					<tr class={rowCls}><td class="px-4 py-2">{$i18n.t('Less: losses brought forward')}</td><td class="px-4 py-2 text-right font-mono">{fmt(result.prior_year_losses)}</td></tr>
 					<tr class="{rowCls} font-semibold bg-gray-50 dark:bg-gray-800/40"><td class="px-4 py-2">{$i18n.t('Assessable profit')}</td><td class="px-4 py-2 text-right font-mono">{fmt(result.profit_to_declare)}</td></tr>
 
-					{#if (result.cit_tiers ?? []).length > 1}
+					{#if tiered(result.cit_tiers)}
 						{#each result.cit_tiers as t}
 							<tr class={rowCls}>
 								<td class="px-4 py-2 pl-8">
@@ -603,7 +619,7 @@
 						{/each}
 						<tr class="{rowCls} font-medium"><td class="px-4 py-2">{citLabel} {$i18n.t('before reductions')}</td><td class="px-4 py-2 text-right font-mono">{fmt(result.cit)}</td></tr>
 					{:else}
-						<tr class={rowCls}><td class="px-4 py-2">{citLabel} ({pct(result.cit_rate)})</td><td class="px-4 py-2 text-right font-mono">{fmt(result.cit)}</td></tr>
+						<tr class={rowCls}><td class="px-4 py-2">{citLabel} ({pct(result.cit_tiers?.[0]?.rate ?? result.cit_rate)})</td><td class="px-4 py-2 text-right font-mono">{fmt(result.cit)}</td></tr>
 					{/if}
 					{#if result.preferential}
 						<tr class={rowCls}><td class="px-4 py-2">{$i18n.t('Less: preferential exemption')} ({pct(result.cit_preferential_rate)})</td><td class="px-4 py-2 text-right font-mono">{fmt(result.preferential)}</td></tr>

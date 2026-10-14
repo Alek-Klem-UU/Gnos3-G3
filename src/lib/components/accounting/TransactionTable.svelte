@@ -85,8 +85,11 @@
 	const handleBulkPost = async () => {
 		if (selectedIds.size === 0) return;
 		try {
-			const result = await bulkPostTransactions({ company_id: companyId });
+			const result = await bulkPostTransactions({ company_id: companyId, transaction_ids: [...selectedIds] });
 			toast.success(`${result?.posted ?? 0} ${$i18n.t('entries posted')}`);
+			if (result?.skipped) {
+				toast.warning(`${result.skipped} ${$i18n.t('not posted')}: ${(result.errors ?? []).slice(0, 3).join(' · ')}`);
+			}
 			selectedIds = new Set();
 			await loadTransactions();
 		} catch (err: any) { toast.error(err?.detail ?? `${err}`); }

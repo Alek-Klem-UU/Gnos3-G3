@@ -17,6 +17,7 @@
 	} from '$lib/apis/accounting';
 
 	import Spinner from '$lib/components/common/Spinner.svelte';
+	import ConfirmDialog from '$lib/components/common/ConfirmDialog.svelte';
 
 	const i18n = getContext('i18n');
 
@@ -180,6 +181,36 @@
 
 	// ─── Close Period ───────────────────────────────────────────────────────────
 
+	// Closing locks the whole accounting period the checked month falls in, which
+	// is more than that month when the company keeps yearly periods: say which.
+	let showCloseConfirm = false;
+	$: closeTarget = checklist?.period ?? null;
+	$: closeMessage = !closeTarget
+		? ''
+		: closeTarget.start_date < checklist.period_start || closeTarget.end_date > checklist.period_end
+			? $i18n.t(
+					'This closes the whole period {{name}}, **from {{start}} to {{end}}** — not only the month you checked ({{from}} to {{to}}). No entry dated in that range can be added, changed or voided afterwards. To close one month at a time, set up monthly periods under Settings → Accounting Periods.',
+					{
+						name: closeTarget.name,
+						start: closeTarget.start_date,
+						end: closeTarget.end_date,
+						from: checklist.period_start,
+						to: checklist.period_end
+					}
+				)
+			: $i18n.t(
+					'Close {{name}} (**{{start}} to {{end}}**)? No entry dated in this period can be added, changed or voided afterwards.',
+					{ name: closeTarget.name, start: closeTarget.start_date, end: closeTarget.end_date }
+				);
+
+	const requestClosePeriod = () => {
+		if (!checklist?.period_id) {
+			toast.info($i18n.t('Use the Accounting Periods section in Settings to close the period'));
+			return;
+		}
+		showCloseConfirm = true;
+	};
+
 	const handleClosePeriod = async () => {
 		if (!checklist?.period_id) {
 			toast.info($i18n.t('Use the Accounting Periods section in Settings to close the period'));
@@ -258,6 +289,14 @@
 		return '\u274C';
 	};
 </script>
+
+<ConfirmDialog
+	bind:show={showCloseConfirm}
+	on:confirm={handleClosePeriod}
+	title={$i18n.t('Close Period')}
+	message={closeMessage}
+	confirmLabel={$i18n.t('Close Period')}
+/>
 
 <div class="py-2">
 	<!-- Header -->
@@ -400,7 +439,7 @@
 					<button
 						class="px-4 py-2 text-sm font-medium rounded-lg bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white transition disabled:opacity-50"
 						disabled={!(checklist.can_close ?? false) || closing}
-						on:click={handleClosePeriod}
+						on:click={requestClosePeriod}
 					>
 						{$i18n.t('Close Period')}
 					</button>
