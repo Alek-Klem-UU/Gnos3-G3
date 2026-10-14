@@ -2699,9 +2699,9 @@ async def get_manifest_json():
                     'purpose': 'any',
                 },
                 {
-                    'src': '/static/logo.png',
+                    'src': '/static/web-app-manifest-512x512.png',
                     'type': 'image/png',
-                    'sizes': '500x500',
+                    'sizes': '512x512',
                     'purpose': 'maskable',
                 },
             ],
