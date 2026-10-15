@@ -24,6 +24,15 @@
 			crossorigin="use-credentials"
 		/>
 		<link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+		<!-- UI font: fetch it with the page so first paint is not in a fallback font.
+		     Keep the file name in sync with the @font-face in src/app.css. -->
+		<link
+			rel="preload"
+			href="/assets/fonts/Geist-1.7.2-Variable.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
 		<meta
 			name="viewport"
 			content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, interactive-widget=resizes-content"

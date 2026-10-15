@@ -174,8 +174,7 @@
 		term = new Terminal({
 			cursorBlink: true,
 			fontSize: 13,
-			fontFamily:
-				"'JetBrains Mono', 'Fira Code', 'Cascadia Code', Menlo, Monaco, 'Courier New', monospace",
+			fontFamily: "'Geist Mono', ui-monospace, Menlo, Monaco, Consolas, 'Courier New', monospace",
 			theme: {
 				background: '#000000',
 				foreground: '#c0c0c0',
@@ -268,7 +267,9 @@
 		}
 	}
 
-	onMount(() => {
+	onMount(async () => {
+		// The terminal measures its cell size once, when it opens: load Geist Mono first.
+		await document.fonts?.load('13px "Geist Mono"').catch(() => {});
 		initTerminal();
 	});
 

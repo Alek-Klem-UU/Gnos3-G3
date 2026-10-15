@@ -15,6 +15,45 @@
 	--color-gray-850: oklch(0.27 0 0);
 	--color-gray-900: oklch(0.2 0 0);
 	--color-gray-950: oklch(0.16 0 0);
+
+	/* Gnos3 fonts: Geist for the UI, Geist Mono for code, amounts and account codes.
+	   Faces in app.css, files and licences in static/assets/fonts/NOTICES.md.
+	   --font-cjk (below) picks the Chinese / Japanese / Korean font for the UI language. */
+	--font-sans:
+		'Geist', 'Vazirmatn', var(--font-cjk), ui-sans-serif, system-ui, 'Segoe UI', Roboto,
+		'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+		'Noto Color Emoji';
+	--font-mono:
+		'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+		'Courier New', monospace;
+}
+
+/*
+  Geist has no CJK. Name the system CJK fonts explicitly, otherwise the browser picks
+  one itself and can render Chinese with a Japanese font on an English page. Simplified
+  Chinese by default; i18n sets <html lang> to the UI language, which switches the list.
+*/
+@layer base {
+	:root {
+		--font-cjk:
+			'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC',
+			'Source Han Sans SC', 'Noto Sans SC';
+	}
+	:root:lang(zh-TW),
+	:root:lang(zh-HK),
+	:root:lang(zh-Hant) {
+		--font-cjk:
+			'PingFang TC', 'PingFang HK', 'Microsoft JhengHei', 'Noto Sans CJK TC', 'Source Han Sans TC',
+			'Noto Sans TC';
+	}
+	:root:lang(ja) {
+		--font-cjk:
+			'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Meiryo', 'Noto Sans CJK JP',
+			'Noto Sans JP';
+	}
+	:root:lang(ko) {
+		--font-cjk: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans CJK KR', 'Noto Sans KR';
+	}
 }
 
 /*
@@ -38,10 +77,7 @@
 @layer base {
 	html,
 	pre {
-		font-family:
-			-apple-system, BlinkMacSystemFont, 'Inter', 'Vazirmatn', ui-sans-serif, system-ui, 'Segoe UI',
-			Roboto, Ubuntu, Cantarell, 'Noto Sans', sans-serif, 'Helvetica Neue', Arial,
-			'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+		font-family: var(--font-sans);
 	}
 
 	pre {

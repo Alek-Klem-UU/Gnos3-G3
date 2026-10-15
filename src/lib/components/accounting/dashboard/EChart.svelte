@@ -13,11 +13,20 @@
 	let ro: ResizeObserver | null = null;
 	let mounted = false;
 
+	// Canvas text ignores CSS fonts and is not redrawn when a web font arrives, so
+	// hand ECharts the page's font stack and wait for Geist before the first draw.
+	let fontFamily = 'sans-serif';
+	const withFont = (o: typeof option) => ({ ...o, textStyle: { fontFamily, ...o.textStyle } });
+
 	onMount(async () => {
-		const mod = await import('echarts');
+		fontFamily = getComputedStyle(el).fontFamily || fontFamily;
+		const [mod] = await Promise.all([
+			import('echarts'),
+			document.fonts?.load('12px Geist').catch(() => {})
+		]);
 		echarts = mod;
 		chart = echarts.init(el, null, { renderer: 'canvas' });
-		if (option) chart.setOption(option, true);
+		if (option) chart.setOption(withFont(option), true);
 		ro = new ResizeObserver(() => {
 			if (chart) chart.resize();
 		});
@@ -26,7 +35,7 @@
 	});
 
 	// notMerge=true so a full option swap (e.g. theme change) replaces cleanly.
-	$: if (mounted && chart && option) chart.setOption(option, true);
+	$: if (mounted && chart && option) chart.setOption(withFont(option), true);
 
 	onDestroy(() => {
 		ro?.disconnect();
