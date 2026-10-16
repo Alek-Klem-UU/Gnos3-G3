@@ -1601,7 +1601,7 @@ DEFAULT_USER_PERMISSIONS = {
     'settings': {
         'interface': USER_PERMISSIONS_SETTINGS_INTERFACE,
     },
-    # ─── Cross-stack RBAC (Gnos3-K4mi-Nexa data modules) ─────────────────
+    # ─── Cross-stack RBAC (Gnos3-G3 data modules) ────────────────────────
     # Default deny: baseline users get NO module access. The seeded groups
     # (Admins / Accountants / Document Operators / Viewers) grant True values.
     # Per-company role assignments live under `companies` and are merged in
