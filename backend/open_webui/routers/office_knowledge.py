@@ -59,7 +59,13 @@ async def import_file(request,client,headers,knowledge_id,user,source):
     existing=await Files.get_file_by_id(file_id)
     if existing and (existing.user_id!=user.id or (existing.meta or {}).get('office_source_id')!=source['id']):
         raise RuntimeError('Office file identity conflict')
-    if existing and (existing.meta or {}).get('office_synced_hash')==source['hash'] and await Knowledges.has_file(knowledge_id,file_id):return
+    bypass=request.app.state.config.BYPASS_EMBEDDING_AND_RETRIEVAL
+    if existing and (existing.meta or {}).get('office_synced_hash')==source['hash'] and (existing.meta or {}).get('office_sync_status') in ('ready','empty') and await Knowledges.has_file(knowledge_id,file_id):
+        # Older imports indexed only the knowledge base. A #file reference uses
+        # its own file-<id> collection, so unchanged legacy files need repair.
+        text=(existing.data or {}).get('content','')
+        if bypass or not text.strip() or (await ASYNC_VECTOR_DB_CLIENT.has_collection(f'file-{file_id}') and await ASYNC_VECTOR_DB_CLIENT.has_collection(knowledge_id)):
+            return
     response=await client.get('/api/knowledge-export',headers=headers,params={'id':source['id'],'hash':source['hash']});response.raise_for_status()
     payload=response.json()
     data=base64.b64decode(payload['dataBase64'],validate=True)
@@ -87,12 +93,21 @@ async def import_file(request,client,headers,knowledge_id,user,source):
             content='\n'.join(document.page_content for document in documents)
         await Files.update_file_data_by_id(file_id, {'content':content, 'status':'processing' if content.strip() else 'completed'})
         if content.strip():
+            # Follow the standard upload -> knowledge flow. Supplying content
+            # directly to the knowledge call deletes the individual file index.
+            async with get_async_db_context() as db:
+                await process_file(request,ProcessFileForm(file_id=file_id,content=content),user=user,db=db)
             if await ASYNC_VECTOR_DB_CLIENT.has_collection(knowledge_id):
                 await ASYNC_VECTOR_DB_CLIENT.delete(collection_name=knowledge_id,filter={'file_id':file_id})
-            async with get_async_db_context() as db:
-                await process_file(request,ProcessFileForm(file_id=file_id,content=content,collection_name=knowledge_id),user=user,db=db)
-        elif await ASYNC_VECTOR_DB_CLIENT.has_collection(knowledge_id):
-            await ASYNC_VECTOR_DB_CLIENT.delete(collection_name=knowledge_id,filter={'file_id':file_id})
+            if not bypass:
+                async with get_async_db_context() as db:
+                    await process_file(request,ProcessFileForm(file_id=file_id,collection_name=knowledge_id),user=user,db=db)
+        else:
+            # An emptied file must not leave old text available to #file.
+            if await ASYNC_VECTOR_DB_CLIENT.has_collection(f'file-{file_id}'):
+                await ASYNC_VECTOR_DB_CLIENT.delete_collection(collection_name=f'file-{file_id}')
+            if await ASYNC_VECTOR_DB_CLIENT.has_collection(knowledge_id):
+                await ASYNC_VECTOR_DB_CLIENT.delete(collection_name=knowledge_id,filter={'file_id':file_id})
         await update_meta(file_id,user,{'office_synced_hash':source['hash'],'office_sync_status':'ready' if content.strip() else 'empty','office_sync_error':None})
     except Exception:
         await update_meta(file_id,user,{'office_sync_status':'failed','office_sync_error':'Indexing failed. Try Sync my Office files again.'})
